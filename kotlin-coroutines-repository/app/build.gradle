@@ -72,9 +72,6 @@ dependencies {
     def work_version = "2.1.0-alpha01"
     implementation "androidx.work:work-runtime-ktx:$work_version"
 
-//    def work_version = "1.0.1"
-//    implementation "android.arch.work:work-runtime:$work_version"
-
     androidTestImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test:rules:1.2.0'
@@ -83,8 +80,8 @@ dependencies {
     androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
     androidTestImplementation "androidx.work:work-testing:$work_version"
 
-    def expresso_version = "3.1.1"
-    androidTestImplementation "androidx.test.espresso:espresso-core:$expresso_version"
-    androidTestImplementation "androidx.test.espresso:espresso-contrib:$expresso_version"
-    androidTestImplementation "androidx.test.espresso:espresso-intents:$expresso_version"
+    def espresso_version = "3.1.1"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
+    androidTestImplementation "androidx.test.espresso:espresso-contrib:$espresso_version"
+    androidTestImplementation "androidx.test.espresso:espresso-intents:$espresso_version"
 }
