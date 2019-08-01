@@ -59,7 +59,8 @@ class KotlinCoroutinesApp : Application() {
 
         // Enqueue it work WorkManager, keeping any previously scheduled jobs for the same
         // work.
-        WorkManager.getInstance()
+        WorkManager.getInstance(this)
             .enqueueUniquePeriodicWork(RefreshMainDataWork::class.java.name, KEEP, work)
     }
+
 }

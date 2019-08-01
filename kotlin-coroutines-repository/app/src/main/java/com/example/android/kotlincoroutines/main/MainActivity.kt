@@ -49,6 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         // Show a snackbar whenever the [ViewModel.snackbar] is updated with a non-null value
         model.snackbar.observe(this, Observer { text ->
+            if (text.isNullOrBlank()) return@Observer
             Snackbar.make(binding.root, text, Snackbar.LENGTH_SHORT).show()
             model.onSnackbarShown()
         })
