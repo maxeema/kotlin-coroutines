@@ -54,7 +54,7 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             delay(1_000)
             // use postValue since we're in a background thread
-            _snackBar.value = "Hello, from threads!"
+            _snackBar.value = "Hello, from coroutines!"
         }
     }
 
