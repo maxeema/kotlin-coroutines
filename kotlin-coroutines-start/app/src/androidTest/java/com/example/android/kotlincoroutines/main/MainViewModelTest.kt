@@ -19,6 +19,7 @@ package com.example.android.kotlincoroutines.main
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import com.google.common.truth.Truth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.TestCoroutineDispatcher
@@ -30,9 +31,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
 
-@RunWith(JUnit4::class)
+@RunWith(AndroidJUnit4ClassRunner::class)
 class MainViewModelTest {
 
     /**
@@ -71,13 +71,13 @@ class MainViewModelTest {
 
     @Test
     fun whenMainViewModelClicked_showSnackbar() = testDispatcher.runBlockingTest {
-        subject.snackbar.observeForTesting {
-            subject.onMainViewClicked()
+        subject.snackEvent.observeForTesting {
+            subject.onMainViewClicked(null)
             // progress time by one second
             advanceTimeBy(1_000)
             // value is available immediately without making the test wait
-            Truth.assertThat(subject.snackbar.value)
-                    .isEqualTo("Hello, from coroutines!")
+            Truth.assertThat(subject.snackEvent.value)
+                    .contains("Hello, from coroutines!")
         }
     }
 

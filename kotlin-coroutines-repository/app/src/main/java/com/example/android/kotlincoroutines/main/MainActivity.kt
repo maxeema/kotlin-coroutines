@@ -17,11 +17,10 @@
 package com.example.android.kotlincoroutines.main
 
 import android.os.Bundle
-import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
+import androidx.lifecycle.observe
 import com.example.android.kotlincoroutines.R
 import com.example.android.kotlincoroutines.databinding.ActivityMainBinding
 import com.google.android.material.snackbar.Snackbar
@@ -42,17 +41,11 @@ class MainActivity : AppCompatActivity() {
         binding.model = model
         binding.lifecycleOwner = this
 
-        // Show the spinner when [MainViewModel.spinner] is true
-        model.spinner.observe(this, Observer { show ->
-            binding.spinner.visibility = if (show) View.VISIBLE else View.GONE
-        })
-
-        // Show a snackbar whenever the [ViewModel.snackbar] is updated with a non-null value
-        model.snackbar.observe(this, Observer { text ->
-            if (text.isNullOrBlank()) return@Observer
+        model.snackEvent.observe(this) { text ->
+            text ?: return@observe
             Snackbar.make(binding.root, text, Snackbar.LENGTH_SHORT).show()
-            model.onSnackbarShown()
-        })
+            model.onSnackEvent()
+        }
     }
 
 }

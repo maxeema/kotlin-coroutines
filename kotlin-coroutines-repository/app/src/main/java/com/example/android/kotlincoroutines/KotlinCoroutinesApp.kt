@@ -53,13 +53,13 @@ class KotlinCoroutinesApp : Application() {
 
         // Specify that the work should attempt to run every day
         val work = PeriodicWorkRequest
-            .Builder(RefreshMainDataWork::class.java, 1, TimeUnit.DAYS)
+            .Builder(RefreshMainDataWork::class.java, 1L, TimeUnit.DAYS)
             .setConstraints(constraints)
             .build()
 
         // Enqueue it work WorkManager, keeping any previously scheduled jobs for the same
         // work.
-        WorkManager.getInstance(this)
+        WorkManager.getInstance()
             .enqueueUniquePeriodicWork(RefreshMainDataWork::class.java.name, KEEP, work)
     }
 

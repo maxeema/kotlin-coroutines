@@ -30,7 +30,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import java.util.concurrent.TimeUnit.SECONDS
 
 @RunWith(JUnit4::class)
 class MainViewModelTest {
@@ -62,7 +61,7 @@ class MainViewModelTest {
         )
 
         subject.spinner.captureValues {
-            subject.onMainViewClicked()
+            subject.onMainViewClicked(null)
             runBlocking {
                 assertSendsValues(2_000, true)
                 call.onSuccess("data")
@@ -83,7 +82,7 @@ class MainViewModelTest {
 
         subject.spinner.captureValues {
             val spinnerCaptor = this
-            subject.onMainViewClicked()
+            subject.onMainViewClicked(null)
             runBlocking {
                 assertSendsValues(2_000, true)
                 call.onError(FakeNetworkException("An error"))
@@ -102,12 +101,12 @@ class MainViewModelTest {
                 )
         )
 
-        subject.snackbar.captureValues {
-            subject.onMainViewClicked()
+        subject.snackEvent.captureValues {
+            subject.onMainViewClicked(null)
             runBlocking {
                 call.onError(FakeNetworkException("An error"))
                 assertSendsValues(2_000, "An error")
-                subject.onSnackbarShown()
+                subject.onSnackEvent()
                 assertSendsValues(2_000, "An error", null)
             }
         }
@@ -122,7 +121,7 @@ class MainViewModelTest {
                         titleDao
                 )
         )
-        subject.onMainViewClicked()
+        subject.onMainViewClicked(null)
         titleDao.assertNextInsert("OK")
     }
 }

@@ -16,44 +16,37 @@
 
 package com.example.android.kotlincoroutines.main
 
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.material.snackbar.Snackbar
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.example.android.kotlincoroutines.R
+import androidx.lifecycle.observe
+import com.example.android.kotlincoroutines.databinding.ActivityMainBinding
+import com.google.android.material.snackbar.Snackbar
 
 /**
  * Main Activity for our application. This activity uses [MainViewModel] to implement MVVM.
  */
 class MainActivity : AppCompatActivity() {
 
-    /**
-     * Inflate layout and setup click listeners and LiveData observers.
-     */
+    private lateinit var binding: ActivityMainBinding
+
+    private val model by viewModels<MainViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_main)
-
-        val rootLayout: ConstraintLayout = findViewById(R.id.rootLayout)
-
-        val viewModel = ViewModelProviders.of(this)
-            .get(MainViewModel::class.java)
-
-        // When rootLayout is clicked call onMainViewClicked in ViewModel
-        rootLayout.setOnClickListener {
-            viewModel.onMainViewClicked()
+//        val binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
+        ActivityMainBinding.inflate(layoutInflater).apply {
+            binding = this
+            setContentView(root)
+            viewModel = model
         }
 
-        // Show a snackbar whenever the [ViewModel.snackbar] is updated with a non-null value
-        viewModel.snackbar.observe(this, Observer { text ->
-            text?.let {
-                Snackbar.make(rootLayout, text, Snackbar.LENGTH_SHORT).show()
-                viewModel.onSnackbarShown()
-            }
-
-        })
+        model.snackEvent.observe(this) {
+            it ?: return@observe
+            Snackbar.make(binding.root, it, Snackbar.LENGTH_SHORT).show()
+            model.onSnackEvent()
+        }
     }
+
 }

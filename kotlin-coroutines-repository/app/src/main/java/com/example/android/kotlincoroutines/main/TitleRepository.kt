@@ -16,12 +16,10 @@
 
 package com.example.android.kotlincoroutines.main
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.map
 import com.example.android.kotlincoroutines.util.FakeNetworkCall
-import com.example.android.kotlincoroutines.util.FakeNetworkError
-import com.example.android.kotlincoroutines.util.FakeNetworkException
-import com.example.android.kotlincoroutines.util.FakeNetworkSuccess
+import com.example.android.kotlincoroutines.util.FakeNetworkResult.FakeNetworkError
+import com.example.android.kotlincoroutines.util.FakeNetworkResult.FakeNetworkSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.LazyThreadSafetyMode.NONE
@@ -29,63 +27,17 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-/**
- * TitleRepository provides an interface to fetch a title or request a new one be generated.
- *
- * Repository modules handle data operations. They provide a clean API so that the rest of the app
- * can retrieve this data easily. They know where to get the data from and what API calls to make
- * when data is updated. You can consider repositories to be mediators between different data
- * sources, in our case it mediates between a network API and an offline database cache.
- */
 class TitleRepository(private val network: MainNetwork, private val titleDao: TitleDao) {
 
-    /**
-     * [LiveData] to load title.
-     *
-     * This is the main interface for loading a title. The title will be loaded from the offline
-     * cache.
-     *
-     * Observing this will not cause the title to be refreshed, use [TitleRepository.refreshTitle]
-     * to refresh the title.
-     *
-     * Because this is defined as `by lazy` it won't be instantiated until the property is
-     * used for the first time.
-     */
-    val title: LiveData<String> by lazy<LiveData<String>>(NONE) {
-        Transformations.map(titleDao.loadTitle()) { it?.title }
-    }
+    val title by lazy(NONE) { titleDao.loadTitle().map { it?.title } }
 
-    /**
-     * Refresh the current title and save the results to the offline cache.
-     *
-     * This method does not return the new title. Use [TitleRepository.title] to observe
-     * the current tile.
-     */
     suspend fun refreshTitle() = withContext(Dispatchers.IO) {
-        try {
-            val result = network.fetchNewWelcome().await()
-            titleDao.insertTitle(Title(result))
-        } catch (error: FakeNetworkException) {
-            throw TitleRefreshError(error)
-        }
+        val result = network.fetchNewWelcome().await()
+        titleDao.insertTitle(Title(result))
     }
 
 }
 
-/**
- * Thrown when there was a error fetching a new title
- *
- * @property message user ready error message
- * @property cause the original cause of this exception
- */
-class TitleRefreshError(cause: Throwable) : Throwable(cause.message, cause)
-
-/**
- * Suspend function to use callback-based [FakeNetworkCall] in coroutines
- *
- * @return network result after completion
- * @throws Throwable original exception from library if network request fails
- */
 suspend fun <T> FakeNetworkCall<T>.await() : T = suspendCoroutine { continuation ->
     addOnResultListener { when (it) {
         is FakeNetworkSuccess<T> -> continuation.resume(it.data)

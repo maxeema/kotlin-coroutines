@@ -16,115 +16,44 @@
 
 package com.example.android.kotlincoroutines.main
 
+import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.android.kotlincoroutines.util.singleArgViewModelFactory
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-/**
- * MainViewModel designed to store and manage UI-related data in a lifecycle conscious way. This
- * allows data to survive configuration changes such as screen rotations. In addition, background
- * work such as fetching network results can continue through configuration changes and deliver
- * results after the new Fragment or Activity is available.
- *
- * @param repository the data source this ViewModel will fetch results from.
- */
 class MainViewModel(private val repository: TitleRepository) : ViewModel() {
 
     companion object {
-        /**
-         * Factory for creating [MainViewModel]
-         *
-         * @param arg the repository to pass to [MainViewModel]
-         */
         val FACTORY = singleArgViewModelFactory(::MainViewModel)
     }
 
-    /**
-     * Request a snackbar to display a string.
-     *
-     * This variable is private because we don't want to expose MutableLiveData
-     *
-     * MutableLiveData allows anyone to set a value, and MainViewModel is the only
-     * class that should be setting values.
-     */
-    private val _snackBar = MutableLiveData<String>()
-
-    /**
-     * Request a snackbar to display a string.
-     */
-    val snackbar: LiveData<String>
-        get() = _snackBar
-
-    /**
-     * Update title text via this livedata
-     */
     val title = repository.title
+    val spinner = MutableLiveData<Boolean>() as LiveData<Boolean>
 
-    /**
-     * Show a spinner when if true
-     *
-     * This variable is private because we don't want to expose MutableLiveData
-     *
-     * MutableLiveData allows anyone to set a value, and MainViewModel is the only
-     * class that should be setting values.
-     */
-    private val _spinner = MutableLiveData<Boolean>()
+    val snackEvent = MutableLiveData<String?>() as LiveData<String?>
+    fun onSnackEvent() { snackEvent.asMutable().value = null }
 
-    /**
-     * Show a loading spinner if true
-     */
-    val spinner: LiveData<Boolean>
-        get() = _spinner
-
-    /**
-     * Respond to onClick events by refreshing the title.
-     *
-     * The loading spinner will display until a result is returned, and errors will trigger
-     * a snackbar.
-     */
-    fun onMainViewClicked() {
-        refreshTitle()
-    }
-
-    /**
-     * Called immediately after the UI shows the snackbar.
-     */
-    fun onSnackbarShown() {
-        _snackBar.value = null
-    }
-
-    /**
-     * Refresh the title, showing a loading spinner while it refreshes and errors via snackbar.
-     */
-    fun refreshTitle() {
+    fun onMainViewClicked(v: View?) {
         launchDataLoad {
             repository.refreshTitle()
         }
     }
 
-    /**
-     * Helper function to call a data load function with a loading spinner, errors will trigger a
-     * snackbar.
-     *
-     * By marking `block` as `suspend` this creates a suspend lambda which can call suspend
-     * functions.
-     *
-     * @param block lambda to actually load data. It is called in the viewModelScope. Before calling the
-     *              lambda the loading spinner will display, after completion or error the loading
-     *              spinner will stop
-     */
     private fun launchDataLoad(block: suspend () -> Unit) = viewModelScope.launch {
+        spinner.asMutable().value = true
         try {
-            _spinner.value = true
             block()
-        } catch (error: TitleRefreshError) {
-            _snackBar.value = error.message
+        } catch (error: Throwable) {
+            snackEvent.asMutable().value = error.message
         } finally {
-            _spinner.value = false
+            spinner.asMutable().value = false
         }
     }
+
+    private fun <T> LiveData<T>.asMutable() = this as MutableLiveData<T>
+
 }

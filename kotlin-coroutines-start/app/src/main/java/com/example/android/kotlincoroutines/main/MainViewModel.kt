@@ -16,12 +16,15 @@
 
 package com.example.android.kotlincoroutines.main
 
+import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+import java.util.*
 
 /**
  * MainViewModel designed to store and manage UI-related data in a lifecycle conscious way. This
@@ -31,37 +34,22 @@ import kotlinx.coroutines.launch
  */
 class MainViewModel : ViewModel() {
 
-    /**
-     * Request a snackbar to display a string.
-     *
-     * This variable is private because we don't want to expose MutableLiveData
-     *
-     * MutableLiveData allows anyone to set a value, and MainViewModel is the only
-     * class that should be setting values.
-     */
-    private val _snackBar = MutableLiveData<String>()
+    val snackEvent = MutableLiveData<String?>() as LiveData<String?>
 
-    /**
-     * Request a snackbar to display a string.
-     */
-    val snackbar: LiveData<String>
-        get() = _snackBar
-
-    /**
-     * Wait one second then display a snackbar.
-     */
-    fun onMainViewClicked() {
+    fun onMainViewClicked(v: View?) {
         viewModelScope.launch {
-            delay(1_000)
-            // use postValue since we're in a background thread
-            _snackBar.value = "Hello, from coroutines!"
+            delay(500)
+            snackEvent.asMutable().value = """
+                |Hello, from coroutines!
+                |Date is: ${Date()}
+            """.trimMargin()
         }
     }
 
-    /**
-     * Called immediately after the UI shows the snackbar.
-     */
-    fun onSnackbarShown() {
-        _snackBar.value = null
+    fun onSnackEvent() {
+        snackEvent.asMutable().value = null
     }
+
+    private fun <T> LiveData<T>.asMutable() = this as MutableLiveData<T>
+
 }

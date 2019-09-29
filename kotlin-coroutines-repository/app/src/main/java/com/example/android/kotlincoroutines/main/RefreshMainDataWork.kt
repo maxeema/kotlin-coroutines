@@ -36,7 +36,7 @@ class RefreshMainDataWork(context: Context, params: WorkerParameters) :
         return try {
             repository.refreshTitle()
             Result.success()
-        } catch (error: TitleRefreshError) {
+        } catch (error: Throwable) {
             Result.failure()
         }
     }
